@@ -1,12 +1,10 @@
 import { memberAdd } from "@/service/post/memberAddService";
 import { profileAdd } from "@/service/post/memberProfileAddService";
 import { movieAdd } from "@/service/post/movieAddService";
-import { MemberDataType } from "@/type/data/memberData";
-import { MemberProfileDataType } from "@/type/data/memberProfileData";
+import { MemberAddType } from "@/type/service/memberType";
+import { MemberProfileAddType } from "@/type/service/memberProfileType";
 import { MovieDataType } from "@/type/data/movieData";
 import { AddModalPropsType } from "@/type/props/modal";
-import { MemberProfileAddType } from "@/type/service/memberProfileType";
-import { MemberAddType } from "@/type/service/memberType";
 import { ChangeEvent, useEffect, useState } from "react";
 
 // 콘텐츠 라벨
@@ -89,18 +87,18 @@ const AddModal = ({
   >(() => {
     if (listCategory === "contents") {
       return {
-        age_rating: contentAgeLobel[0].label,
-        category_names: "",
-        director_names: "",
-        genre_names: contentGenre[0].label,
+        age_rating: contentAgeLobel[0].label as MovieDataType["age_rating"],
+        category_names: [],
+        director_names: [],
+        genre_names: [],
         movie_id: 0,
         movie_title: "",
         plot_summary: "",
         poster_img: "",
-        production_company_names: "",
+        production_company_names: [],
         movie_rating: "",
         release_date: "",
-        runtime: "",
+        runtime: 0,
         teaser_url: "",
       } as MovieDataType;
     } else if (listCategory === "member") {
@@ -112,7 +110,7 @@ const AddModal = ({
         expiryDate: "",
         paymentDate: "",
         cardName: "",
-        amount: membershipOptions[0].value, // 초기값 설정
+        amount: membershipOptions[0].value,
       } as MemberAddType;
     } else if (listCategory === "profile") {
       return {
@@ -143,22 +141,22 @@ const AddModal = ({
             updatedData.movie_title = e.target.value;
             break;
           case 2:
-            updatedData.age_rating = contentAgeLobel[radioAge].label;
+            updatedData.age_rating = contentAgeLobel[radioAge].label as MovieDataType["age_rating"];
             break;
           case 3:
             updatedData.movie_rating = e.target.value;
             break;
           case 4:
-            updatedData.genre_names = contentGenre[radioGenre].label;
+            updatedData.genre_names = e.target.value.split(",").map((item) => item.trim());
             break;
           case 5:
-            updatedData.category_names = e.target.value;
+            updatedData.category_names = e.target.value.split(",").map((item) => item.trim());
             break;
           case 6:
             updatedData.release_date = e.target.value;
             break;
           case 7:
-            updatedData.runtime = e.target.value;
+            updatedData.runtime = Number(e.target.value);
             break;
           case 8:
             updatedData.poster_img = e.target.value;
@@ -167,10 +165,10 @@ const AddModal = ({
             updatedData.teaser_url = e.target.value;
             break;
           case 10:
-            updatedData.production_company_names = e.target.value;
+            updatedData.production_company_names = e.target.value.split(",").map((item) => item.trim());
             break;
           case 11:
-            updatedData.director_names = e.target.value;
+            updatedData.director_names = e.target.value.split(",").map((item) => item.trim());
             break;
           case 12:
             updatedData.plot_summary = e.target.value;
@@ -235,8 +233,8 @@ const AddModal = ({
     if (listCategory === "contents") {
       setAddData((prev) => {
         const updatedData = { ...prev } as MovieDataType;
-        updatedData.age_rating = contentAgeLobel[radioAge].label;
-        updatedData.genre_names = contentGenre[radioGenre].label;
+        updatedData.age_rating = contentAgeLobel[radioAge].label as MovieDataType["age_rating"];
+        updatedData.genre_names = [contentGenre[radioGenre].label];
         return updatedData;
       });
     }
@@ -254,7 +252,7 @@ const AddModal = ({
     if (listCategory === "contents" && "movie_id" in addData) {
       const isAdd = window.confirm("추가하시겠습니까?");
       if (isAdd) {
-        await movieAdd(addData as MovieDataType, postFile);
+        await movieAdd(addData as MovieDataType);
         console.log(addData);
         setDataReload((prev) => !prev);
         setAddModalOpen(false);
@@ -316,7 +314,7 @@ const AddModal = ({
                 </div>
               ) : i === 2 ? (
                 <div className="w-[70%] flex flex-col gap-2 py-2">
-                  {contentAgeLobel.map((label, index) => (
+                  {contentAgeLobel.map((label) => (
                     <div key={label.id} className="flex items-center gap-2">
                       <input
                         type="radio"
@@ -325,9 +323,8 @@ const AddModal = ({
                         name="age_rating"
                         checked={radioAge === label.id}
                         className="cursor-pointer"
-                        onChange={(e) => {
+                        onChange={() => {
                           setRadioAge(label.id);
-                          handleInput(e, i);
                         }}
                       />
                       <label
@@ -341,7 +338,7 @@ const AddModal = ({
                 </div>
               ) : i === 4 ? (
                 <div className="w-[70%] flex flex-col gap-2 py-2">
-                  {contentGenre.map((label, index) => (
+                  {contentGenre.map((label) => (
                     <div key={label.id} className="flex items-center gap-2">
                       <input
                         type="radio"
@@ -350,9 +347,8 @@ const AddModal = ({
                         name="genre"
                         checked={radioGenre === label.id}
                         className="cursor-pointer"
-                        onChange={(e) => {
+                        onChange={() => {
                           setRadioGenre(label.id);
-                          handleInput(e, i);
                         }}
                       />
                       <label
@@ -364,9 +360,7 @@ const AddModal = ({
                     </div>
                   ))}
                 </div>
-              ) : (
-                <></>
-              )}
+              ) : null}
             </div>
           ))
         ) : listCategory === "member" ? (
@@ -397,9 +391,8 @@ const AddModal = ({
                         name="membership"
                         checked={radioMembership === option.id}
                         className="cursor-pointer"
-                        onChange={(e) => {
+                        onChange={() => {
                           setRadioMembership(option.id);
-                          handleInput(e, i);
                         }}
                       />
                       <label
@@ -438,7 +431,7 @@ const AddModal = ({
       </div>
       <button
         className="w-[150px] h-[50px] bg-main_Red rounded-lg text-lg font-semibold text-white relative z-50"
-        onClick={() => handleAddData()}
+        onClick={handleAddData}
       >
         추가하기
       </button>

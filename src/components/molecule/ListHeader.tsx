@@ -16,9 +16,8 @@ const ListHeader = ({
   setListBodyOpen,
   listCategory,
   dataSet,
-  setDataReload
+  setDataReload,
 }: ListHeaderPropsType) => {
-  // 상태 타입을 MovieDataType 또는 memberDataType으로 설정
   const [datas, setDatas] = useState<
     MovieDataType | MemberDataType | MemberProfileDataType | null
   >(null);
@@ -33,7 +32,6 @@ const ListHeader = ({
     }
   }, [data, listCategory]);
 
-  // 멤버 데이터와 영화 데이터의 타이틀 렌더링
   return (
     <div className={`${listHeaderStyle}`}>
       <div className={`${listHeaderContentStyle}`}>
@@ -47,25 +45,37 @@ const ListHeader = ({
               align="text-start"
             />
             <Title
-              title={(datas as MovieDataType).movie_title}
+              title={(datas as MovieDataType).movie_title || ""}
+              size="text-xl"
+              textColor="text-white"
+              align="text-start"
+            />
+
+            {/* 수정된 부분 */}
+            {(() => {
+              const genreNames = (datas as MovieDataType).genre_names;
+              return (
+                <Title
+                  title={
+                    Array.isArray(genreNames)
+                      ? genreNames.join(", ")
+                      : genreNames || ""
+                  }
+                  size="text-xl"
+                  textColor="text-white"
+                  align="text-start"
+                />
+              );
+            })()}
+
+            <Title
+              title={String((datas as MovieDataType).runtime ?? "")}
               size="text-xl"
               textColor="text-white"
               align="text-start"
             />
             <Title
-              title={(datas as MovieDataType).genre_names}
-              size="text-xl"
-              textColor="text-white"
-              align="text-start"
-            />
-            <Title
-              title={(datas as MovieDataType).runtime}
-              size="text-xl"
-              textColor="text-white"
-              align="text-start"
-            />
-            <Title
-              title={(datas as MovieDataType).release_date}
+              title={(datas as MovieDataType).release_date || ""}
               size="text-xl"
               textColor="text-white"
               align="text-start"
@@ -82,20 +92,20 @@ const ListHeader = ({
               align="text-start"
             />
             <Title
-              title={(datas as MemberDataType).name}
+              title={(datas as MemberDataType).name || ""}
               size="text-xl"
               textColor="text-white"
               align="text-start"
             />
             <Title
-              title={(datas as MemberDataType).email}
+              title={(datas as MemberDataType).email || ""}
               size="text-xl"
               textColor="text-white"
               align="text-start"
             />
           </>
         )}
-        {/* 프로필  */}
+        {/* 프로필 */}
         {listCategory === "profile" && datas && (
           <>
             <Title
@@ -111,19 +121,19 @@ const ListHeader = ({
               align="text-start"
             />
             <Title
-              title={(datas as MemberProfileDataType).member_name}
+              title={(datas as MemberProfileDataType).member_name || ""}
               size="text-xl"
               textColor="text-white"
               align="text-start"
             />
             <Title
-              title={(datas as MemberProfileDataType).member_email}
+              title={(datas as MemberProfileDataType).member_email || ""}
               size="text-xl"
               textColor="text-white"
               align="text-start"
             />
             <Title
-              title={(datas as MemberProfileDataType).member_password}
+              title={(datas as MemberProfileDataType).member_password || ""}
               size="text-xl"
               textColor="text-white"
               align="text-start"
@@ -132,7 +142,11 @@ const ListHeader = ({
         )}
       </div>
       <div className={`${listHeaderContentStyle}`}>
-        <BtnBox listCategory={listCategory} dataSet={dataSet} setDataReload={setDataReload} />
+        <BtnBox
+          listCategory={listCategory}
+          dataSet={dataSet}
+          setDataReload={setDataReload}
+        />
         <div onClick={() => setListBodyOpen((prev) => !prev)}>
           <Arrowicon rotate="rotate-0" />
         </div>
